@@ -1,4 +1,4 @@
-# Use the official Python image from the Docker Hub
+
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
