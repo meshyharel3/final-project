@@ -1,0 +1,30 @@
+# Use the official Nginx base image
+FROM nginx:latest
+
+# Install OpenSSL to generate a self-signed SSL certificate
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
+# Create directories for SSL certificates and static files
+RUN mkdir -p /etc/ssl/private /etc/ssl/certs
+
+# Remove the default Nginx configuration
+RUN rm /etc/nginx/conf.d/default.conf || true
+
+# Copy static files for the application
+COPY project-static/ /app/nginx/static
+
+# Copy the custom Nginx configuration file
+COPY nginx/nginx.conf /etc/nginx/conf.d/status-page.conf
+
+# Generate a self-signed SSL certificate for HTTPS
+RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/ssl/private/status-page.key \
+    -out /etc/ssl/certs/status-page.crt \
+    -subj "/C=US/ST=State/L=City/O=Organization/OU=Department/CN=statuspage.example.com"
+
+# Expose ports 80 and 443 for HTTP and HTTPS traffic
+EXPOSE 80 443
+
+# Start Nginx in the foreground to keep the container running
+CMD ["nginx", "-g", "daemon off;"]
+
